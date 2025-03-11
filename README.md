@@ -1,1 +1,5 @@
-# Concurrency_Correa_Iglesias
+# Concurrency Programming
+
+Students:
+- Correa Ignacio
+- Iglesias Julieta
