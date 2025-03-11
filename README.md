@@ -1,5 +1,5 @@
 # Concurrency Programming
 
-Students:aweldjwaemfQPIFMéqw
+Students:
 - Correa Ignacio
 - Iglesias Julieta
