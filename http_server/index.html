@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leibniz Approximation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #545454;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #545454;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #007BFF;
+        }
+        h3, h4 {
+            margin: 10px 0;
+        }
+        .highlight {
+            color: #0f6803; /* Cambia este color según tu preferencia */
+            font-weight: bold;
+            font-style: italic;
+            text-shadow: white 2px 2px 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Leibniz Approximation Result</h1>
+        <h3>Valor de Pi para el término <span class="highlight">{N}</span></h3>
+        <h3>{leibniz_result}</h3>
+        <p></p>
+        <h4>El <span class="highlight">tiempo</span> tardado fue </h4>
+        <h4>{time} segundos</h4>
+    </div>
+</body>
+</html>
