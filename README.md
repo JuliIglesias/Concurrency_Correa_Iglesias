@@ -17,8 +17,8 @@ cálculo de la primera para devolver su respuesta.
 
 2. ¿Por qué se observa este comportamiento?
 
-Esto se debe a que el servidor es single-threaded y no está preparado para procesar ambas request al
-mismo tiempo. :(
+Esto se debe a que el servidor no está hecho para manejar correctamente la llegada de varias solicitudes
+simultáneas. A primera vista, la causa principal es que es single-threaded.
 
 3. ¿Cómo solucionar usando solo librerías estándar de Rust?
 
