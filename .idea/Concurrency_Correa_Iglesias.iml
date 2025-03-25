@@ -9,6 +9,7 @@
       <excludeFolder url="file://$MODULE_DIR$/tp1/target" />
       <excludeFolder url="file://$MODULE_DIR$/tp3/grep_client/target" />
       <excludeFolder url="file://$MODULE_DIR$/tp3/grep_engine/target" />
+      <excludeFolder url="file://$MODULE_DIR$/http_server/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
