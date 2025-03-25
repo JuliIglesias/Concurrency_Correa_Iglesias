@@ -4,6 +4,7 @@ use std::io::BufReader;
 use std::io::Result;
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::time::Instant;
 
 #[derive(Clone, Copy)]
 pub enum SearchMode {
@@ -12,12 +13,19 @@ pub enum SearchMode {
     ConcurrentChunk,
 }
 
-pub fn search_word(pattern: &str, paths_files: Vec<String>, mode: SearchMode) -> Result<Vec<String>> {
+pub fn search_word(pattern: &str, paths_files: Vec<String>, mode: SearchMode) -> (Result<Vec<String>>, f64) {
+    let now = Instant::now();
+    let mut results: Result<Vec<String>>;
+
     match mode {
-        SearchMode::Sequential => search_word_sequential(pattern, paths_files),
-        SearchMode::Concurrent => search_pattern_several_files_concurrent(pattern, paths_files),
-        SearchMode::ConcurrentChunk => search_word_concurrent_chunk(pattern, paths_files),
+        SearchMode::Sequential => results = search_word_sequential(pattern, paths_files),
+        SearchMode::Concurrent => results = search_pattern_several_files_concurrent(pattern, paths_files),
+        SearchMode::ConcurrentChunk => results = search_word_concurrent_chunk(pattern, paths_files),
     }
+
+    let total_duration: f64 = now.elapsed().as_secs_f64();
+
+    (results, total_duration)
 }
 
 fn search_word_sequential(pattern: &str, paths_files: Vec<String>) -> Result<Vec<String>> {

@@ -24,7 +24,7 @@ fn main() {
     let files = &args[3..];
 
     for file in files {
-        let result = search_word(pattern, vec![file.to_string()], mode).unwrap();
+        let result = search_word(pattern, vec![file.to_string()], mode).0.unwrap();
         for line in result {
             println!("{}", line);
         }
