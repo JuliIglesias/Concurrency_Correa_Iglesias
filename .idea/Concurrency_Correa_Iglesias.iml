@@ -4,7 +4,11 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/tp1/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tp1/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/tp3/grep_client/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tp3/grep_engine/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/tp1/target" />
+      <excludeFolder url="file://$MODULE_DIR$/tp3/grep_client/target" />
+      <excludeFolder url="file://$MODULE_DIR$/tp3/grep_engine/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
