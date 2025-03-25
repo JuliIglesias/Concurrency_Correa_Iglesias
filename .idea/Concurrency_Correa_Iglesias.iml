@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/tp1/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tp3/grep_client/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tp3/grep_engine/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tp3/grep_engine/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/tp1/target" />
       <excludeFolder url="file://$MODULE_DIR$/tp3/grep_client/target" />
       <excludeFolder url="file://$MODULE_DIR$/tp3/grep_engine/target" />
