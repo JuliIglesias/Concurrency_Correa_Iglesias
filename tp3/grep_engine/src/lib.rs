@@ -5,6 +5,7 @@ use std::io::Result;
 use std::{thread};
 use std::slice::Chunks;
 
+#[derive(Clone, Copy)]
 pub enum SearchMode {
     Sequential,
     Concurrent,
@@ -76,7 +77,7 @@ fn push_result(pattern: &str, result: &mut Vec<String>, file_lines: Vec<String>)
     }
 }
 
-pub fn read_file(file_path: &str) -> Result<Vec<String>> {
+fn read_file(file_path: &str) -> Result<Vec<String>> {
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
     let lines = reader

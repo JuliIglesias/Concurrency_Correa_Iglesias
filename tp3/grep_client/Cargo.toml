@@ -4,4 +4,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-#grep_engine = "0.1.0"
+grep_engine = { path = "../grep_engine" }
