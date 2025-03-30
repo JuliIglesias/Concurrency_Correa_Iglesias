@@ -14,9 +14,9 @@ pub enum SearchMode {
 }
 
 pub fn search_word(pattern: &str, paths_files: Vec<String>, mode: SearchMode) -> (Result<Vec<String>>, f64) {
-    let now = Instant::now();
     let mut results: Result<Vec<String>>;
 
+    let now = Instant::now();
     match mode {
         SearchMode::Sequential => results = search_word_sequential(pattern, paths_files),
         SearchMode::Concurrent => results = search_pattern_several_files_concurrent(pattern, paths_files),
@@ -29,14 +29,16 @@ pub fn search_word(pattern: &str, paths_files: Vec<String>, mode: SearchMode) ->
 }
 
 fn search_word_sequential(pattern: &str, paths_files: Vec<String>) -> Result<Vec<String>> {
-    let mut result: Vec<String> = Vec::new();
+    let mut result: Vec<Vec<String>> = Vec::new();
 
     for path_file in paths_files {
-        let file_lines = read_file(path_file.as_str())?;
-        push_result(pattern, &mut result, file_lines);
+        let file_lines: Vec<String> = read_file(path_file.as_str())?;
+        let filtered_lines: Vec<String> = file_lines.filter(|line| line.contains(pattern)).collect::<Vec<String>>();
+        result.push(filtered_lines);
     }
 
-    Ok(result)
+    let flatted_result = result.iter().flatten().collect::<Vec<String>>();
+    Ok(flatted_result)
 }
 
 fn search_pattern_several_files_concurrent(pattern: &str, paths_files: Vec<String>) -> Result<Vec<String>> {
