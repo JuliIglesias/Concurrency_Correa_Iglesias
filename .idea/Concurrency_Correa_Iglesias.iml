@@ -7,10 +7,13 @@
       <sourceFolder url="file://$MODULE_DIR$/tp3/grep_client/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tp3/grep_engine/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tp3/grep_engine/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/lib/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/tp1/target" />
       <excludeFolder url="file://$MODULE_DIR$/tp3/grep_client/target" />
       <excludeFolder url="file://$MODULE_DIR$/tp3/grep_engine/target" />
       <excludeFolder url="file://$MODULE_DIR$/http_server/target" />
+      <excludeFolder url="file://$MODULE_DIR$/lib/target" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
