@@ -42,22 +42,19 @@ fn search_word_sequential(pattern: &str, paths_files: Vec<String>) -> Result<Vec
 }
 
 fn search_pattern_several_files_concurrent(pattern: &str, paths_files: Vec<String>) -> Result<Vec<String>> {
-    let result = Arc::new(Mutex::new(Vec::new()));
-
     thread::scope(|s| {
-        for path_file in paths_files {
-            let result = Arc::clone(&result);
+        let threads_results: Vec<Vec<String>> = paths_files.iter().map(|path| {
             s.spawn(move || {
-                if let Ok(file_lines) = read_file(path_file.as_str()) {
-                    let mut result = result.lock().unwrap();
-                    push_result(pattern, &mut result, file_lines);
-                }
-            });
-        }
-    });
+                let file_lines = read_file(path.as_str()).unwrap();
+                file_lines.into_iter().filter(|line| line.contains(pattern)).collect::<Vec<String>>()
+            })
+        })
+            .map(|thread_result| {
+                thread_result.join().unwrap_or_else(|_| Vec::new()) })
+            .collect();
 
-    let result = Arc::try_unwrap(result).unwrap().into_inner().unwrap();
-    Ok(result)
+        Ok(threads_results.into_iter().flatten().collect::<Vec<String>>())
+    })
 }
 
 fn search_word_concurrent_chunk(pattern: &str, paths_files: Vec<String>) -> Result<Vec<String>> {
