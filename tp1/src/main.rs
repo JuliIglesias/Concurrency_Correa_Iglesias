@@ -4,6 +4,7 @@ use std::net::TcpStream;
 use std::io::prelude::*;
 use http_server::leibniz_approximation;
 
+
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
     for stream in listener.incoming() {
@@ -11,6 +12,7 @@ fn main() {
         handle_connection(stream);
     }
 }
+
 
 fn handle_connection(mut stream: TcpStream) {
     let mut buffer = [0; 1024];
@@ -43,6 +45,7 @@ fn handle_connection(mut stream: TcpStream) {
     handle_404_response(&mut stream, status_line, contents);
 }
 
+
 fn handle_404_response(stream: &mut TcpStream, status_line: &str, contents: String) {
     let response = format!(
         "{}\r\nContent-Length: {}\r\n\r\n{}",
@@ -53,6 +56,7 @@ fn handle_404_response(stream: &mut TcpStream, status_line: &str, contents: Stri
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
 }
+
 
 fn handle_ok_response(mut stream: TcpStream, contents: String) {
     let response = format!(
