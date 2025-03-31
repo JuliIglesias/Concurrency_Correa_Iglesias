@@ -61,7 +61,7 @@ fn search_word_concurrent_chunk(pattern: &str, paths_files: Vec<String>) -> Resu
         let threads_results: Vec<Vec<String>> = paths_files.iter().map(|path| {
             s.spawn(move || {
                 let file_lines = read_file(path.as_str()).unwrap();
-                let chunk_lines = file_lines.chunks(8);
+                let chunk_lines = file_lines.chunks(4152);
 
                 thread::scope(|chunk_scope| {
                     let chunks_threads_results: Vec<Vec<String>> = chunk_lines.map(|chunk_line| {
