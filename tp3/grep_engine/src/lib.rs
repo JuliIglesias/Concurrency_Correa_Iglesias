@@ -58,37 +58,58 @@ fn search_pattern_several_files_concurrent(pattern: &str, paths_files: Vec<Strin
 }
 
 fn search_word_concurrent_chunk(pattern: &str, paths_files: Vec<String>) -> Result<Vec<String>> {
-    let result = Arc::new(Mutex::new(Vec::new()));
-
     thread::scope(|s| {
-        for path_file in paths_files {
-            let result = Arc::clone(&result);
+        let threads_results: Vec<Vec<String>> = paths_files.iter().map(|path| {
             s.spawn(move || {
-                if let Ok(file_lines) = read_file(path_file.as_str()) {
-                    let chunks = file_lines.chunks(4);
-                    for chunk in chunks {
-                        let result = Arc::clone(&result);
-                        let chunk: Vec<String> = chunk.to_vec();
-                        s.spawn(move || {
-                            let mut result = result.lock().unwrap();
-                            push_result(pattern, &mut result, chunk);
-                        });
-                    }
-                }
-            });
-        }
-    });
+                let file_lines = read_file(path.as_str()).unwrap();
+                let chunk_lines = file_lines.chunks(8);
 
-    let result = Arc::try_unwrap(result).unwrap().into_inner().unwrap();
-    Ok(result)
-}
+                thread::scope(|chunk_scope| {
+                    let chunks_threads_results: Vec<Vec<String>> = chunk_lines.map(|chunk_line| {
+                        chunk_scope.spawn(move || {
+                            chunk_line.to_vec().iter().filter(|line| line.contains(pattern)).collect::<Vec<String>>()
+                        })
+                    })
+                        .map(|chunk_thread_result| {
+                            chunk_thread_result.join().unwrap_or_else(|_| Vec::new())
+                        })
+                        .collect();
 
-fn push_result(pattern: &str, result: &mut Vec<String>, file_lines: Vec<String>) {
-    for line in file_lines {
-        if line.contains(pattern) {
-            result.push(line);
-        }
-    }
+                    chunks_threads_results.into_iter().flatten().collect::<Vec<String>>()
+                })
+            })
+        })
+            .map(|thread_result| {
+                thread_result.join().unwrap_or_else(|_| Vec::new())
+            })
+            .collect();
+
+        Ok(threads_results.into_iter().flatten().collect::<Vec<String>>())
+    })
+
+    // let result = Arc::new(Mutex::new(Vec::new()));
+    //
+    // thread::scope(|s| {
+    //     for path_file in paths_files {
+    //         let result = Arc::clone(&result);
+    //         s.spawn(move || {
+    //             if let Ok(file_lines) = read_file(path_file.as_str()) {
+    //                 let chunks = file_lines.chunks(4);
+    //                 for chunk in chunks {
+    //                     let result = Arc::clone(&result);
+    //                     let chunk: Vec<String> = chunk.to_vec();
+    //                     s.spawn(move || {
+    //                         let mut result = result.lock().unwrap();
+    //                         push_result(pattern, &mut result, chunk);
+    //                     });
+    //                 }
+    //             }
+    //         });
+    //     }
+    // });
+    //
+    // let result = Arc::try_unwrap(result).unwrap().into_inner().unwrap();
+    // Ok(result)
 }
 
 pub fn read_file(file_path: &str) -> Result<Vec<String>> {
