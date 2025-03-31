@@ -42,17 +42,20 @@ fn search_word_sequential(pattern: &str, paths_files: Vec<String>) -> Result<Vec
 
 fn search_pattern_several_files_concurrent(pattern: &str, paths_files: Vec<String>) -> Result<Vec<String>> {
     thread::scope(|s| {
-        let threads_results: Vec<Vec<String>> = paths_files.iter().map(|path| {
+        let threads_results: Vec<_> = paths_files.into_iter().map(|path| {
             s.spawn(move || {
                 let file_lines = read_file(path.as_str()).unwrap();
                 file_lines.into_iter().filter(|line| line.contains(pattern)).collect::<Vec<String>>()
             })
-        })
+        }).collect();
+
+        let joined_threads: Vec<_> = threads_results.into_iter()
             .map(|thread_result| {
-                thread_result.join().unwrap_or_else(|_| Vec::new()) })
+                thread_result.join().unwrap_or_else(|_| Vec::new())
+            })
             .collect();
 
-        Ok(threads_results.into_iter().flatten().collect::<Vec<String>>())
+        Ok(joined_threads.into_iter().flatten().collect::<Vec<String>>())
     })
 }
 
