@@ -23,10 +23,9 @@ fn main() {
     let pattern = &args[2];
     let files = &args[3..];
 
-    for file in files {
-        let result = search_word(pattern, vec![file.to_string()], mode).0.unwrap();
-        for line in result {
-            println!("{}", line);
-        }
+    let (result, total_time) = search_word(pattern, files.to_vec(), mode);
+    for line in result.unwrap() {
+        println!("{}", line);
     }
+    println!("Total time in ms: {}", total_time);
 }
