@@ -60,33 +60,40 @@ fn search_pattern_several_files_concurrent(pattern: &str, paths_files: Vec<Strin
 }
 
 fn search_word_concurrent_chunk(pattern: &str, paths_files: Vec<String>) -> Result<Vec<String>> {
+    let pattern = pattern.to_string();
+
     thread::scope(|s| {
-        let threads_results: Vec<Vec<String>> = paths_files.iter().map(|path| {
+        let threads_results: Vec<_> = paths_files.iter().map(|path| {
+            let path = path.clone();
+            let pattern = pattern.clone();
+
             s.spawn(move || {
-                let file_lines = read_file(path.as_str()).unwrap();
-                let chunk_lines = file_lines.chunks(4152);
+                let file_lines = read_file(&path).unwrap();
+                let chunk_lines: Vec<_> = file_lines.chunks(3826).map(|chunk| chunk.to_vec()).collect();
 
-                thread::scope(|chunk_scope| {
-                    let chunks_threads_results: Vec<Vec<String>> = chunk_lines.map(|chunk_line| {
-                        chunk_scope.spawn(move || {
-                            chunk_line.to_vec().into_iter().filter(|line| line.contains(pattern)).collect::<Vec<String>>()
-                        })
+                let chunks_threads_results: Vec<_> = chunk_lines.into_iter().map(|chunk_line| {
+                    let pattern = pattern.clone();
+                    thread::spawn(move || {
+                        chunk_line.into_iter().filter(|line| line.contains(&pattern)).collect::<Vec<String>>()
                     })
-                        .map(|chunk_thread_result| {
-                            chunk_thread_result.join().unwrap_or_else(|_| Vec::new())
-                        })
-                        .collect();
+                }).collect();
 
-                    chunks_threads_results.into_iter().flatten().collect::<Vec<String>>()
-                })
-            })
-        })
-            .map(|thread_result| {
-                thread_result.join().unwrap_or_else(|_| Vec::new())
-            })
-            .collect();
+                let joined_chunks_results: Vec<_> = chunks_threads_results
+                    .into_iter()
+                    .map(|chunk_thread_result| {
+                        chunk_thread_result.join().unwrap_or_else(|_| Vec::new())
+                    })
+                    .collect();
 
-        Ok(threads_results.into_iter().flatten().collect::<Vec<String>>())
+                joined_chunks_results.into_iter().flatten().collect::<Vec<String>>()
+            })
+        }).collect();
+
+        let joined_threads: Vec<_> = threads_results.into_iter().map(|thread_result| {
+            thread_result.join().unwrap_or_else(|_| Vec::new())
+        }).collect();
+
+        Ok(joined_threads.into_iter().flatten().collect::<Vec<String>>())
     })
 }
 
