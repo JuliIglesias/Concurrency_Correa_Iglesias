@@ -27,6 +27,7 @@ impl ThreadPool {
 
         let mut workers = Vec::with_capacity(size);
         for id in 0..size {
+            println!("Creating worker {}", id); // Registro de depuración
             workers.push(Worker::new(id, Arc::clone(&receiver)));
         }
 
@@ -39,6 +40,7 @@ impl ThreadPool {
         F: FnOnce() + Send + 'static,
     {
         let job = Box::new(f);
+        println!("Sending job to worker"); // Registro de depuración
         self.sender.send(job).unwrap();
     }
 }
