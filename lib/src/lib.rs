@@ -1,6 +1,7 @@
 use std::fs;
 use std::io::{Read, Write};
 use std::net::TcpStream;
+use std::path::PathBuf;
 use std::time::Instant;
 
 pub fn handle_connection(mut stream: TcpStream) {
@@ -15,7 +16,7 @@ pub fn handle_connection(mut stream: TcpStream) {
     if method =="GET" && path.starts_with("/pi/"){
         if let Some(n_str) = path.strip_prefix("/pi/"){
             if let Ok(n) = n_str.parse::<u64>(){
-                let contents = fs::read_to_string("../../tp1/index.html").unwrap();
+                let contents = get_index_html().unwrap();
                 // This is the line that calls the function for leibniz_approximation
                 let (leibniz_result, leibniz_duration) = leibniz_approximation(n);
                 let contents = contents
@@ -30,11 +31,23 @@ pub fn handle_connection(mut stream: TcpStream) {
     }
 
     let status_line = "HTTP/1.1 404 NOT FOUND";
-    let contents = fs::read_to_string("../../tp1/404.html").unwrap();
+    let contents = get_404_html().unwrap();
     handle_404_response(&mut stream, status_line, contents);
 }
 
-pub fn handle_404_response(stream: &mut TcpStream, status_line: &str, contents: String) {
+pub fn get_index_html() -> Result<String, std::io::Error> {
+    let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path.push("assets/index.html");
+    fs::read_to_string(path)
+}
+
+pub fn get_404_html() -> Result<String, std::io::Error> {
+    let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path.push("assets/404.html");
+    fs::read_to_string(path)
+}
+
+    pub fn handle_404_response(stream: &mut TcpStream, status_line: &str, contents: String) {
     let response = format!(
         "{}\r\nContent-Length: {}\r\n\r\n{}",
         status_line,
