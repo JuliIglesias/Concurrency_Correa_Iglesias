@@ -5,7 +5,7 @@ use tp3::ThreadPool;
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:7880").unwrap();
 
-    let pool = ThreadPool::new(12);
+    let pool = ThreadPool::new(24);
 
     for stream in listener.incoming() {
         println!("\nNew connection");
