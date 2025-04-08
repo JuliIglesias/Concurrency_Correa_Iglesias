@@ -17,3 +17,4 @@ simultáneas. A primera vista, la causa principal es que es single-threaded.
 
 Para hacer que el servidor sea multithreaded usando solo las librerías estándar de Rust, se podría usar
 el módulo 'std::thread' para crear un nuevo hilo para cada conexión entrante.
+
