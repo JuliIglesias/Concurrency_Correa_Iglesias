@@ -1,7 +1,8 @@
 [package]
-name = "tp1"
+name = "lib"
 version = "0.1.0"
 edition = "2021"
 
+include = ["src/**", "assets/**"]
+
 [dependencies]
-lib = { path = "../lib" }
