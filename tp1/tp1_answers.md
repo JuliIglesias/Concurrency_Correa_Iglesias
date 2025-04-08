@@ -1,10 +1,3 @@
-# Concurrency Programming
-
-Students:
-- Correa Ignacio
-- Iglesias Julieta
-
-
 ## TP1 ~ HTTP Server
 
 1. ¿Qué sucede con dos requests simultáneas que tardan en procesarse?
@@ -13,7 +6,7 @@ Al mandar dos requests simultáneamente (la primera con un n muy grande y la seg
 observamos que la segunda, a pesar de ser mucho más pequeña, tuvo que esperar a que se finalice el
 cálculo de la primera para devolver su respuesta.
 
-![img.png](tp1/img.png)
+![img.png](img.png)
 
 2. ¿Por qué se observa este comportamiento?
 
