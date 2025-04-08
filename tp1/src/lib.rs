@@ -1,5 +1,6 @@
 use std::time::Instant;
 
+
 pub fn leibniz_approximation(n: u64) -> (f64, f64) {
     let now = Instant::now();
     let mut result: f64 = 0.0;
@@ -12,6 +13,7 @@ pub fn leibniz_approximation(n: u64) -> (f64, f64) {
 
     (result, total_duration)
 }
+
 
 fn leibniz_term(n: u64) -> f64 {
     let numerator: f64 = 4.0 * if n % 2 == 0 { 1.0 } else { -1.0 };
