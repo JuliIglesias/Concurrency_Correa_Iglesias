@@ -13,5 +13,3 @@ pub fn handle_connection(mut stream: TcpStream) {
     // let request = String::from_utf8_lossy(&buffer);
     // println!("{}", request);
 }
-
-

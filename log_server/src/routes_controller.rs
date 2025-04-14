@@ -2,11 +2,11 @@ use std::borrow::Cow;
 use std::net::TcpStream;
 
 pub fn handle_request(buffer: &mut [u8; 1024], mut stream: &TcpStream) {
-    let request = String::from_utf8_lossy(&buffer[..]);
+    let request: Cow<str> = String::from_utf8_lossy(&buffer[..]);
 
     let (method, path) = parse_request(&request);
 
-    handle_route(method, path, buffer, stream);
+    handle_route(method, path, &request, stream);
 }
 
 fn parse_request(request: &Cow<str>) -> (String, String) {
@@ -17,13 +17,9 @@ fn parse_request(request: &Cow<str>) -> (String, String) {
     (method, path)
 }
 
-fn handle_route(method: String, path: String, buffer: &mut [u8; 1024], mut stream: &TcpStream) {
-    println!("Hello, we are handle route");
-
+fn handle_route(method: String, path: String, request: &Cow<str>, mut stream: &TcpStream) {
     if method == "POST" && path.starts_with("/upload"){
-        println!("omg we are in {}", path);
-
-        upload(buffer, stream)
+        upload(request, stream)
     }
 
     if method == "GET" && path.starts_with("/stats"){
@@ -31,52 +27,33 @@ fn handle_route(method: String, path: String, buffer: &mut [u8; 1024], mut strea
     }
 }
 
-fn upload(buffer: &mut [u8; 1024], mut stream: &TcpStream) {
-    extract_file_content(buffer);
+fn upload(request: &Cow<str>, mut stream: &TcpStream) {
+    let(file_name, file_content) = extract_file_content(request);
+
 }
 
-
-pub fn extract_file_content(buffer: &mut [u8; 1024]) {
-    let request = String::from_utf8_lossy(buffer);
+pub fn extract_file_content<'a>(request: &'a Cow<str>) -> (String, Vec<&'a str>) {
     let headers_end = request.find("\r\n\r\n").unwrap() + 4;
     let headers = &request[..headers_end];
-    let body = &buffer[headers_end..];
+    let body = &request[headers_end..];
 
+    println!("full request: {}", request);
+    println!("headers: {}", headers);
+    println!("body: {}", body);
 
-    if let Some(content_type) = headers.lines().find(|line| line.starts_with("Content-Type:")) {
-        if let Some(boundary) = content_type.split("boundary=").nth(1) {
-            let boundary = format!("--{}", boundary.trim());
-            for part in body.split(|b| b == &b'\r' || b == &b'\n') {
-                println!("in for:{}", String::from_utf8_lossy(part));
-                if part.starts_with(boundary.as_bytes()) {
+    let mut body_lines = body.lines();
+    body_lines.next(); // Discard start boundary.
+    let file_name = body_lines.next().unwrap().split("filename=").nth(1).unwrap().trim().trim_matches('"');
+    body_lines.next(); // Discard Content-Type.
+    body_lines.next(); // Discard blank.
+    let mut content_lines: Vec<&str> = body_lines.collect();
+    content_lines.pop();
+    content_lines.pop(); // Remove the end boundary.
 
-                    if let Ok(part_str) = std::str::from_utf8(part) {
-                        for line in part_str.lines() {
-                            if line.starts_with("Content-Disposition:") {
-                                println!("Content-Disposition: {}", line);
-                                if line.contains("filename=") {
-                                    let file_start = part
-                                        .windows(4)
-                                        .position(|window| window == b"\r\n\r\n")
-                                        .map(|pos| pos + 4)
-                                        .unwrap_or(0);
-                                    let file_content = &part[file_start..];
-                                    if let Ok(content) = std::str::from_utf8(file_content) {
-                                        println!("File content: {}", content);
-                                    }
-                                }
-                                break; // Exit the loop once the header is found
-                            }
-                        }
-                    } else {
-                        println!("Failed to convert part to UTF-8");
-                    }
-                    println!("sera q no toma y da error??");
+    println!("file_name: {}", file_name);
+    println!("content_lines: {:?}", content_lines);
 
-                }
-            }
-        }
-    }
+    (file_name.to_string(), content_lines)
 }
 
 fn stats(mut stream: &TcpStream) {
