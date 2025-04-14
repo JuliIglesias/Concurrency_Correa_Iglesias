@@ -3,5 +3,12 @@
 version = 3
 
 [[package]]
+name = "log_server"
+version = "0.1.0"
+
+[[package]]
 name = "tp4"
 version = "0.1.0"
+dependencies = [
+ "log_server",
+]
