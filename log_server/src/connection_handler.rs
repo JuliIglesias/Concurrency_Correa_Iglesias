@@ -1,4 +1,5 @@
 mod routes_controller;
+mod log_service;
 
 use std::io::Read;
 use std::net::TcpStream;
