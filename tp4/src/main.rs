@@ -13,14 +13,13 @@ fn main() {
     let pool = ThreadPool::new(4);
 
     // Datos compartidos para estadísticas
-    let stats = Arc::new(Mutex::new(log_server::Stats::new()));
+    let stats = Arc::new(Mutex::new(log_server::stats_struct::Stats::new()));
 
     // Crear un semáforo con un límite de 4 permisos
     let semaphore = Arc::new(Semaphore::new(4));
 
     for stream in listener.incoming() {
         let mut stream = stream.unwrap();
-        let stats = Arc::clone(&stats);
         let semaphore = Arc::clone(&semaphore);
 
         pool.execute(move || {
@@ -32,7 +31,7 @@ fn main() {
                 stream.flush().unwrap();
                 return;
             }
-            handle_connection(stream, stats);
+            handle_connection(stream);
         })
     }
 }

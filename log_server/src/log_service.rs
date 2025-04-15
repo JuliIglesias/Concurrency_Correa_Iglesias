@@ -1,13 +1,19 @@
+use crate::stats_struct::Stats;
+
 use std::borrow::Cow;
 use std::io::Write;
 use std::net::TcpStream;
-use std::sync::{Arc, Mutex};
-use crate::Stats;
+use std::sync::{Arc, Mutex, RwLock};
+use lazy_static::lazy_static;
 
-pub fn upload(request: &Cow<str>, mut stream: &TcpStream, stats: Arc<Mutex<Stats>>) {
+lazy_static! {
+    static ref GLOBAL_STATS: RwLock<Stats> = RwLock::new(Stats::new());
+}
+
+pub fn upload(request: &Cow<str>, mut stream: &TcpStream) {
     let (file_name, file_content) = extract_file_content(request);
 
-    save_stats_from_uploaded_documents(file_content, file_name.clone(), stats);
+    save_stats_from_uploaded_documents(file_content, file_name.clone());
 
     let response = format!(
         "HTTP/1.1 200 OK\r\n\
@@ -19,18 +25,16 @@ pub fn upload(request: &Cow<str>, mut stream: &TcpStream, stats: Arc<Mutex<Stats
     stream.flush().unwrap();
 }
 
-fn save_stats_from_uploaded_documents(file_content: Vec<&str>, file_name: String, stats: Arc<Mutex<Stats>>){
+fn save_stats_from_uploaded_documents(file_content: Vec<&str>, file_name: String){
     let exception_count = file_content
         .iter()
         .filter(|line| line.to_lowercase().contains("exception"))
         .count();
 
-    {
-        let mut stats = stats.lock().unwrap();
-        stats.total_exceptions += exception_count;
-        stats.files_processed += 1;
-        stats.exceptions_per_file.push((file_name.clone(), exception_count));
-    }
+    let mut stats = GLOBAL_STATS.write().unwrap();
+    stats.total_exceptions += exception_count;
+    stats.files_processed += 1;
+    stats.exceptions_per_file.push((file_name.clone(), exception_count));
 }
 
 fn extract_file_content<'a>(request: &'a Cow<str>) -> (String, Vec<&'a str>) {
@@ -57,9 +61,9 @@ fn extract_file_content<'a>(request: &'a Cow<str>) -> (String, Vec<&'a str>) {
     (file_name.to_string(), content_lines)
 }
 
-pub fn statistics(mut stream: &TcpStream, stats: Arc<Mutex<Stats>>) {
+pub fn statistics(mut stream: &TcpStream) {
 
-    let stats = stats.lock().unwrap();
+    let stats = GLOBAL_STATS.read().unwrap();
 
     let response = format!(
         "HTTP/1.1 200 OK\r\n{}",
