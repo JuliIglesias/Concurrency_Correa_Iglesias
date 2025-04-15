@@ -10,10 +10,7 @@ fn main() {
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
 
     // Crear un ThreadPool con un tamaño máximo de 4
-    let pool = ThreadPool::new(4);
-
-    // Datos compartidos para estadísticas
-    let stats = Arc::new(Mutex::new(log_server::stats_struct::Stats::new()));
+    let pool = ThreadPool::new(8);
 
     // Crear un semáforo con un límite de 4 permisos
     let semaphore = Arc::new(Semaphore::new(4));

@@ -28,9 +28,9 @@ fn handle_route(method: String,
                 mut stream: &TcpStream
 ) {
     if method == "POST" && path.eq("/upload"){
-        upload(request, stream, stats);
+        upload(request, stream);
     } else if method == "GET" && path.eq("/stats"){
-        statistics(stream, stats);
+        statistics(stream);
     } else{
         not_found(stream);
     }

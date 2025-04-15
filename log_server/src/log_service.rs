@@ -3,15 +3,33 @@ use crate::stats_struct::Stats;
 use std::borrow::Cow;
 use std::io::Write;
 use std::net::TcpStream;
-use std::sync::{Arc, Mutex, RwLock};
-use lazy_static::lazy_static;
+use std::sync::{OnceLock, RwLock};
 
-lazy_static! {
-    static ref GLOBAL_STATS: RwLock<Stats> = RwLock::new(Stats::new());
+static GLOBAL_STATS: OnceLock<RwLock<Stats>> = OnceLock::new();
+
+fn get_global_stats() -> &'static RwLock<Stats> {
+    GLOBAL_STATS.get_or_init(|| RwLock::new(Stats::new()))
 }
 
 pub fn upload(request: &Cow<str>, mut stream: &TcpStream) {
     let (file_name, file_content) = extract_file_content(request);
+
+    // Validar si el archivo no existe o está vacío
+    if file_name.is_empty() || file_content.is_empty() {
+        let body =
+            "HTTP/1.1 400 Bad Request\r\n\
+             File not found or empty\r\n";
+
+        let response = format!(
+            "HTTP/1.1 400 Bad Request\r\n\
+        {}",
+            body
+        );
+
+        stream.write_all(response.as_bytes()).unwrap();
+        stream.flush().unwrap();
+        return;
+    }
 
     save_stats_from_uploaded_documents(file_content, file_name.clone());
 
@@ -37,7 +55,7 @@ fn save_stats_from_uploaded_documents(file_content: Vec<&str>, file_name: String
         .filter(|line| line.to_lowercase().contains("exception"))
         .count();
 
-    let mut stats = GLOBAL_STATS.write().unwrap();
+    let mut stats = get_global_stats().write().unwrap();
     stats.total_exceptions += exception_count;
     stats.files_processed += 1;
     stats.exceptions_per_file.push((file_name.clone(), exception_count));
@@ -69,7 +87,7 @@ fn extract_file_content<'a>(request: &'a Cow<str>) -> (String, Vec<&'a str>) {
 
 pub fn statistics(mut stream: &TcpStream) {
 
-    let stats = GLOBAL_STATS.read().unwrap();
+    let stats = get_global_stats().read().unwrap();
 
     let body = format!("\
         HTTP/1.1 200 OK\r\n\
