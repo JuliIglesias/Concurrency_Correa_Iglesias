@@ -1,9 +1,13 @@
 use std::borrow::Cow;
 use std::io::Write;
 use std::net::TcpStream;
+use std::sync::{Arc, Mutex};
+use crate::Stats;
 
-pub fn upload(request: &Cow<str>, mut stream: &TcpStream) {
+pub fn upload(request: &Cow<str>, mut stream: &TcpStream, stats: Arc<Mutex<Stats>>) {
     let (file_name, file_content) = extract_file_content(request);
+
+    save_stats_from_uploaded_documents(file_content, file_name.clone(), stats);
 
     let response = format!(
         "HTTP/1.1 200 OK\r\n\
@@ -13,6 +17,20 @@ pub fn upload(request: &Cow<str>, mut stream: &TcpStream) {
 
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
+}
+
+fn save_stats_from_uploaded_documents(file_content: Vec<&str>, file_name: String, stats: Arc<Mutex<Stats>>){
+    let exception_count = file_content
+        .iter()
+        .filter(|line| line.to_lowercase().contains("exception"))
+        .count();
+
+    {
+        let mut stats = stats.lock().unwrap();
+        stats.total_exceptions += exception_count;
+        stats.files_processed += 1;
+        stats.exceptions_per_file.push((file_name.clone(), exception_count));
+    }
 }
 
 fn extract_file_content<'a>(request: &'a Cow<str>) -> (String, Vec<&'a str>) {
@@ -39,15 +57,27 @@ fn extract_file_content<'a>(request: &'a Cow<str>) -> (String, Vec<&'a str>) {
     (file_name.to_string(), content_lines)
 }
 
-pub fn stats(mut stream: &TcpStream) {
+pub fn stats(mut stream: &TcpStream, stats: Arc<Mutex<Stats>>) {
+
+    let stats = stats.lock().unwrap();
 
     let response = format!(
         "HTTP/1.1 200 OK\r\n\
         Total exceptions: {}\r\n\
         Files processed: {}\r\n\
-        Per file: {}\r\n",
-        "geda","gedi","frigin"
+        Per file: {:?}\r\n",
+        stats.total_exceptions,
+        stats.files_processed,
+        stats.exceptions_per_file
     );
+
+    stream.write(response.as_bytes()).unwrap();
+    stream.flush().unwrap();
+}
+
+pub fn not_found(mut stream: &mut TcpStream) {
+    let response = "HTTP/1.1 400 Bad Request\r\n\
+        Valid routes:\nPOST /upload - Upload a file for analysis\nGET /stats - Show statistics";
 
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
