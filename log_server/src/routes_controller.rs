@@ -28,9 +28,9 @@ fn handle_route(method: String,
                 mut stream: &TcpStream,
                 stats: Arc<Mutex<Stats>>
 ) {
-    if method == "POST" && path.starts_with("/upload"){
+    if method == "POST" && path.eq("/upload"){
         upload(request, stream, stats);
-    } else if method == "GET" && path.starts_with("/stats"){
+    } else if method == "GET" && path.eq("/stats"){
         statistics(stream, stats);
     } else{
         not_found(stream);

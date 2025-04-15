@@ -71,11 +71,17 @@ pub fn statistics(mut stream: &TcpStream, stats: Arc<Mutex<Stats>>) {
 }
 
 pub fn not_found(mut stream: &TcpStream) {
-    let response =
+    let body =
         "HTTP/1.1 400 Bad Request\r\n\
-        Valid routes:\n\
-        POST /upload - Upload a file for analysis\n\
-        GET /stats - Show statistics";
+        Valid routes:\r\n\
+        POST /upload - Upload a file for analysis\r\n\
+        GET /stats - Show statistics\r\n";
+
+    let response = format!(
+        "HTTP/1.1 400 Bad Request\r\n\
+        {}",
+        body
+    );
 
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
