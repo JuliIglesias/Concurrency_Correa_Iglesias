@@ -148,6 +148,6 @@ pub fn not_found(mut stream: &TcpStream) {
 
     println!("{}", response);
 
-    stream.write(response.as_bytes()).unwrap();
+    stream.write_all(response.as_bytes()).unwrap();
     stream.flush().unwrap();
 }
