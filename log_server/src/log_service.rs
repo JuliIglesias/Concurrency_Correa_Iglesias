@@ -22,6 +22,7 @@ pub fn upload(request: &Cow<str>, mut stream: &TcpStream) {
             "HTTP/1.1 400 Bad Request\r\n\
             Content-Type: text/plain\r\n\
             Content-Length: {}\r\n\
+        \r\n\
         {}",
             body.len(),
             body
@@ -119,7 +120,8 @@ pub fn statistics(mut stream: &TcpStream) {
         "HTTP/1.1 200 OK\r\n\
             Content-Type: text/plain\r\n\
             Content-Length: {}\r\n\
-        {}",
+            \r\n\
+            {}",
         body.len(),
         body
     );
@@ -141,7 +143,8 @@ pub fn not_found(mut stream: &TcpStream) {
         "HTTP/1.1 400 Bad Request\r\n\
             Content-Type: text/plain\r\n\
             Content-Length: {}\r\n\
-        {}",
+            \r\n\
+            {}",
         body.len(),
         body
     );
