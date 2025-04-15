@@ -11,6 +11,18 @@ fn get_global_stats() -> &'static RwLock<Stats> {
     GLOBAL_STATS.get_or_init(|| RwLock::new(Stats::new()))
 }
 
+// // Crear un semáforo con un límite de 4 permisos
+// let semaphore = Arc::new(Semaphore::new(4));
+// let semaphore = Arc::clone(&semaphore);
+// let permit = semaphore.try_acquire();
+// if permit.is_err() {
+// // Si no hay permisos disponibles, devolver un error 429
+// let response = "HTTP/1.1 429 Too Many Requests\r\n\r\nToo many files being processed";
+// stream.write(response.as_bytes()).unwrap();
+// stream.flush().unwrap();
+// return;
+// }
+
 pub fn upload(request: &Cow<str>, mut stream: &TcpStream) {
     let (file_name, file_content) = extract_file_content(request);
 
@@ -73,6 +85,7 @@ fn extract_file_content<'a>(request: &'a Cow<str>) -> (String, Vec<&'a str>) {
 }
 
 pub fn statistics(mut stream: &TcpStream) {
+    // loop {}
 
     let stats = get_global_stats().read().unwrap();
 
