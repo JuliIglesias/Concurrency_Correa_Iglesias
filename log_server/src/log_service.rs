@@ -20,7 +20,10 @@ pub fn upload(request: &Cow<str>, mut stream: &TcpStream) {
 
         let response = format!(
             "HTTP/1.1 400 Bad Request\r\n\
+            Content-Type: text/plain\r\n\
+            Content-Length: {}\r\n\
         {}",
+            body.len(),
             body
         );
 
@@ -103,7 +106,6 @@ fn extract_file_content<'a>(request: &'a Cow<str>, mut stream: &TcpStream) -> (S
 }
 
 pub fn statistics(mut stream: &TcpStream) {
-    // loop {}
 
     let stats = get_global_stats().read().unwrap();
 
@@ -115,9 +117,14 @@ pub fn statistics(mut stream: &TcpStream) {
 
     let response = format!(
         "HTTP/1.1 200 OK\r\n\
+            Content-Type: text/plain\r\n\
+            Content-Length: {}\r\n\
         {}",
+        body.len(),
         body
     );
+
+    println!("{}", response);
 
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
@@ -132,9 +139,14 @@ pub fn not_found(mut stream: &TcpStream) {
 
     let response = format!(
         "HTTP/1.1 400 Bad Request\r\n\
+            Content-Type: text/plain\r\n\
+            Content-Length: {}\r\n\
         {}",
+        body.len(),
         body
     );
+
+    println!("{}", response);
 
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
