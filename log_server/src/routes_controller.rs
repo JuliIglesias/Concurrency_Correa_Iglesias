@@ -27,6 +27,25 @@ fn handle_route(method: String,
                 request: &Cow<str>,
                 mut stream: &TcpStream
 ) {
+
+    /*
+    // Validar si el archivo no existe o está vacío
+    if file_name.is_empty() || file_content.is_empty() {
+        let body =
+            "HTTP/1.1 400 Bad Request\r\n\
+             File not found or empty\r\n";
+
+        let response = format!(
+            "HTTP/1.1 400 Bad Request\r\n\
+        {}",
+            body
+        );
+
+        stream.write_all(response.as_bytes()).unwrap();
+        stream.flush().unwrap();
+        return;
+    }
+    */
     if method == "POST" && path.eq("/upload"){
         upload(request, stream);
     } else if method == "GET" && path.eq("/stats"){

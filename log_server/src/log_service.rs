@@ -14,38 +14,23 @@ fn get_global_stats() -> &'static RwLock<Stats> {
 pub fn upload(request: &Cow<str>, mut stream: &TcpStream) {
     let (file_name, file_content) = extract_file_content(request);
 
-    // Validar si el archivo no existe o está vacío
-    if file_name.is_empty() || file_content.is_empty() {
-        let body =
-            "HTTP/1.1 400 Bad Request\r\n\
-             File not found or empty\r\n";
-
-        let response = format!(
-            "HTTP/1.1 400 Bad Request\r\n\
-        {}",
-            body
-        );
-
-        stream.write_all(response.as_bytes()).unwrap();
-        stream.flush().unwrap();
-        return;
-    }
-
     save_stats_from_uploaded_documents(file_content, file_name.clone());
 
-    let body = format!("\
-        HTTP/1.1 200 OK\r\n\
-        Processed file: {}\n",
-        file_name,
+    let body = format!("HTTP/1.1 200 OK\r\n\
+    Processed file: {}", file_name
     );
 
     let response = format!(
         "HTTP/1.1 200 OK\r\n\
+        Content-Type: text/plain\r\n\
+        Content-Length: {}\r\n\
+        \r\n\
         {}",
+        body.len(),
         body
     );
 
-    stream.write(response.as_bytes()).unwrap();
+    stream.write_all(response.as_bytes()).unwrap();
     stream.flush().unwrap();
 }
 
@@ -72,6 +57,8 @@ fn extract_file_content<'a>(request: &'a Cow<str>) -> (String, Vec<&'a str>) {
 
     let mut body_lines = body.lines();
     body_lines.next(); // Discard start boundary.
+
+    //here fix this (juli)
     let file_name = body_lines.next().unwrap().split("filename=").nth(1).unwrap().trim().trim_matches('"');
     body_lines.next(); // Discard Content-Type.
     body_lines.next(); // Discard blank.
