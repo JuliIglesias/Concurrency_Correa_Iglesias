@@ -9,10 +9,16 @@ pub fn upload(request: &Cow<str>, mut stream: &TcpStream, stats: Arc<Mutex<Stats
 
     save_stats_from_uploaded_documents(file_content, file_name.clone(), stats);
 
+    let body = format!("\
+        HTTP/1.1 200 OK\r\n\
+        Processed file: {}\n",
+        file_name,
+    );
+
     let response = format!(
         "HTTP/1.1 200 OK\r\n\
-        Processed file: {}\n",
-        file_name
+        {}",
+        body
     );
 
     stream.write(response.as_bytes()).unwrap();
@@ -61,9 +67,16 @@ pub fn statistics(mut stream: &TcpStream, stats: Arc<Mutex<Stats>>) {
 
     let stats = stats.lock().unwrap();
 
-    let response = format!(
-        "HTTP/1.1 200 OK\r\n{}",
+    let body = format!("\
+        HTTP/1.1 200 OK\r\n\
+        {}",
         stats.format_stats()
+    );
+
+    let response = format!(
+        "HTTP/1.1 200 OK\r\n\
+        {}",
+        body
     );
 
     stream.write(response.as_bytes()).unwrap();
