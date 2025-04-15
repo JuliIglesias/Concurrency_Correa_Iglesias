@@ -20,6 +20,22 @@ impl Stats {
             exceptions_per_file: Vec::new(),
         }
     }
+
+    pub fn format_stats(&self) -> String {
+        let per_file_formatted: Vec<String> = self.exceptions_per_file
+            .iter()
+            .map(|(file, count)| format!("\"{}\": {}", file, count))
+            .collect();
+
+        format!(
+            "Total exceptions: {}\r\n\
+            Files processed: {}\r\n\
+            Per file: {{{}}}\r\n",
+            self.total_exceptions,
+            self.files_processed,
+            per_file_formatted.join(", ")
+        )
+    }
 }
 
 pub fn handle_connection(mut stream: TcpStream, stats: Arc<Mutex<Stats>>) {

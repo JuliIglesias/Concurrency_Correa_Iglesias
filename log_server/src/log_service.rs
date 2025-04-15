@@ -62,13 +62,8 @@ pub fn statistics(mut stream: &TcpStream, stats: Arc<Mutex<Stats>>) {
     let stats = stats.lock().unwrap();
 
     let response = format!(
-        "HTTP/1.1 200 OK\r\n\
-        Total exceptions: {}\r\n\
-        Files processed: {}\r\n\
-        Per file: {:?}\r\n",
-        stats.total_exceptions,
-        stats.files_processed,
-        stats.exceptions_per_file
+        "HTTP/1.1 200 OK\r\n{}",
+        stats.format_stats()
     );
 
     stream.write(response.as_bytes()).unwrap();
@@ -76,8 +71,11 @@ pub fn statistics(mut stream: &TcpStream, stats: Arc<Mutex<Stats>>) {
 }
 
 pub fn not_found(mut stream: &TcpStream) {
-    let response = "HTTP/1.1 400 Bad Request\r\n\
-        Valid routes:\nPOST /upload - Upload a file for analysis\nGET /stats - Show statistics";
+    let response =
+        "HTTP/1.1 400 Bad Request\r\n\
+        Valid routes:\n\
+        POST /upload - Upload a file for analysis\n\
+        GET /stats - Show statistics";
 
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
