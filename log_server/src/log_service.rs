@@ -1,9 +1,18 @@
 use std::borrow::Cow;
+use std::io::Write;
 use std::net::TcpStream;
 
 pub fn upload(request: &Cow<str>, mut stream: &TcpStream) {
     let (file_name, file_content) = extract_file_content(request);
 
+    let response = format!(
+        "HTTP/1.1 200 OK\r\n\
+        Processed file: {}\n",
+        file_name
+    );
+
+    stream.write(response.as_bytes()).unwrap();
+    stream.flush().unwrap();
 }
 
 fn extract_file_content<'a>(request: &'a Cow<str>) -> (String, Vec<&'a str>) {
@@ -32,4 +41,14 @@ fn extract_file_content<'a>(request: &'a Cow<str>) -> (String, Vec<&'a str>) {
 
 pub fn stats(mut stream: &TcpStream) {
 
+    let response = format!(
+        "HTTP/1.1 200 OK\r\n\
+        Total exceptions: {}\r\n\
+        Files processed: {}\r\n\
+        Per file: {}\r\n",
+        "geda","gedi","frigin"
+    );
+
+    stream.write(response.as_bytes()).unwrap();
+    stream.flush().unwrap();
 }
