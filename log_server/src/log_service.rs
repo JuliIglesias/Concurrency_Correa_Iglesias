@@ -57,7 +57,7 @@ fn extract_file_content<'a>(request: &'a Cow<str>) -> (String, Vec<&'a str>) {
     (file_name.to_string(), content_lines)
 }
 
-pub fn stats(mut stream: &TcpStream, stats: Arc<Mutex<Stats>>) {
+pub fn statistics(mut stream: &TcpStream, stats: Arc<Mutex<Stats>>) {
 
     let stats = stats.lock().unwrap();
 
@@ -75,7 +75,7 @@ pub fn stats(mut stream: &TcpStream, stats: Arc<Mutex<Stats>>) {
     stream.flush().unwrap();
 }
 
-pub fn not_found(mut stream: &mut TcpStream) {
+pub fn not_found(mut stream: &TcpStream) {
     let response = "HTTP/1.1 400 Bad Request\r\n\
         Valid routes:\nPOST /upload - Upload a file for analysis\nGET /stats - Show statistics";
 

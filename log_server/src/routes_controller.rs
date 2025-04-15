@@ -3,7 +3,8 @@ use std::borrow::Cow;
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 use log_service::upload;
-use log_service::stats;
+use log_service::statistics;
+use log_service::not_found;
 
 pub fn handle_request(buffer: &mut [u8; 1024], mut stream: &TcpStream, stats: Arc<Mutex<Stats>>) {
     let request: Cow<str> = String::from_utf8_lossy(&buffer[..]);
@@ -30,7 +31,7 @@ fn handle_route(method: String,
     if method == "POST" && path.starts_with("/upload"){
         upload(request, stream, stats);
     } else if method == "GET" && path.starts_with("/stats"){
-        stats(stream, stats);
+        statistics(stream, stats);
     } else{
         not_found(stream);
     }

@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 log_server = { path = "../log_server" }
 thread_pool_lib = { path = "../thread_pool_lib" }
+tokio = { version = "1.44.2", features = ["sync", "rt-multi-thread"] }
