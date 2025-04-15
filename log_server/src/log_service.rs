@@ -1,5 +1,4 @@
 use crate::stats_struct::Stats;
-
 use std::borrow::Cow;
 use std::io::Write;
 use std::net::TcpStream;
@@ -10,18 +9,6 @@ static GLOBAL_STATS: OnceLock<RwLock<Stats>> = OnceLock::new();
 fn get_global_stats() -> &'static RwLock<Stats> {
     GLOBAL_STATS.get_or_init(|| RwLock::new(Stats::new()))
 }
-
-// // Crear un semáforo con un límite de 4 permisos
-// let semaphore = Arc::new(Semaphore::new(4));
-// let semaphore = Arc::clone(&semaphore);
-// let permit = semaphore.try_acquire();
-// if permit.is_err() {
-// // Si no hay permisos disponibles, devolver un error 429
-// let response = "HTTP/1.1 429 Too Many Requests\r\n\r\nToo many files being processed";
-// stream.write(response.as_bytes()).unwrap();
-// stream.flush().unwrap();
-// return;
-// }
 
 pub fn upload(request: &Cow<str>, mut stream: &TcpStream) {
     let (file_name, file_content) = extract_file_content(request);
@@ -71,6 +58,24 @@ fn extract_file_content<'a>(request: &'a Cow<str>) -> (String, Vec<&'a str>) {
     body_lines.next(); // Discard start boundary.
 
     //here fix this (juli)
+    /*
+    // Validar si el archivo no existe o está vacío
+    if file_name.is_empty() || file_content.is_empty() {
+        let body =
+            "HTTP/1.1 400 Bad Request\r\n\
+             File not found or empty\r\n";
+
+        let response = format!(
+            "HTTP/1.1 400 Bad Request\r\n\
+        {}",
+            body
+        );
+
+        stream.write_all(response.as_bytes()).unwrap();
+        stream.flush().unwrap();
+        return;
+    }
+    */
     let file_name = body_lines.next().unwrap().split("filename=").nth(1).unwrap().trim().trim_matches('"');
     body_lines.next(); // Discard Content-Type.
     body_lines.next(); // Discard blank.
