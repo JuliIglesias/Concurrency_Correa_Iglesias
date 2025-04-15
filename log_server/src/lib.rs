@@ -4,7 +4,6 @@ pub mod stats_struct;
 
 use std::io::Read;
 use std::net::TcpStream;
-use std::sync::{Arc, Mutex};
 use routes_controller::handle_request;
 
 pub fn handle_connection(mut stream: TcpStream) {

@@ -11,7 +11,7 @@ fn get_global_stats() -> &'static RwLock<Stats> {
 }
 
 pub fn upload(request: &Cow<str>, mut stream: &TcpStream) {
-    let (file_name, file_content) = extract_file_content(request, stream);
+    let (file_name, file_content) = extract_file_content(request);
 
     if file_name.eq("") || (file_content.is_empty() && file_name.eq("")) {
         let body =
@@ -67,7 +67,7 @@ fn save_stats_from_uploaded_documents(file_content: Vec<&str>, file_name: String
     stats.exceptions_per_file.push((file_name.clone(), exception_count));
 }
 
-fn extract_file_content<'a>(request: &'a Cow<str>, mut stream: &TcpStream) -> (String, Vec<&'a str>) {
+fn extract_file_content<'a>(request: &'a Cow<str>) -> (String, Vec<&'a str>) {
     let headers_end = request.find("\r\n\r\n").unwrap() + 4;
     let headers = &request[..headers_end];
     let body = &request[headers_end..];

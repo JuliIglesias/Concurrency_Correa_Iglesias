@@ -1,8 +1,8 @@
-use crate::{log_service, stats_struct};
+use crate::{log_service};
 use std::borrow::Cow;
 use std::io::Write;
 use std::net::TcpStream;
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::{OnceLock};
 use log_service::upload;
 use log_service::statistics;
 use log_service::not_found;
@@ -14,7 +14,7 @@ fn get_upload_semaphore() -> &'static Semaphore {
     UPLOAD_SEMAPHORE.get_or_init(|| Semaphore::new(4))
 }
 
-pub fn handle_request(buffer: &mut [u8; 1024], mut stream: &TcpStream) {
+pub fn handle_request(buffer: &mut [u8; 1024], stream: &TcpStream) {
     let request: Cow<str> = String::from_utf8_lossy(&buffer[..]);
 
     let (method, path) = parse_request(&request);
