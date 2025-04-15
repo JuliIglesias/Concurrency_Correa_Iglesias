@@ -27,10 +27,10 @@ fn handle_route(method: String,
                 request: &Cow<str>,
                 mut stream: &TcpStream
 ) {
-    if method == "POST" && path.starts_with("/upload"){
-        upload(request, stream);
-    } else if method == "GET" && path.starts_with("/stats"){
-        statistics(stream);
+    if method == "POST" && path.eq("/upload"){
+        upload(request, stream, stats);
+    } else if method == "GET" && path.eq("/stats"){
+        statistics(stream, stats);
     } else{
         not_found(stream);
     }
