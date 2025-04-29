@@ -1,0 +1,15 @@
+mod routes_controller;
+mod log_service;
+pub mod stats_struct;
+
+use std::io::Read;
+use std::net::TcpStream;
+use std::sync::{Arc, Mutex};
+use routes_controller::handle_request;
+
+pub fn handle_connection(mut stream: TcpStream) {
+    let mut buffer = [0; 1024];
+    stream.read(&mut buffer).unwrap();
+
+    handle_request(&mut buffer, &stream);
+}
