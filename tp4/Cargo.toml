@@ -1,0 +1,8 @@
+[package]
+name = "tp4"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+log_server = { path = "../log_server" }
+thread_pool_lib = { path = "../thread_pool_lib" }
