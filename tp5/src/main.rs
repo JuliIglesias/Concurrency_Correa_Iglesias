@@ -1,4 +1,4 @@
-use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
+use std::sync::{Arc, atomic::{AtomicUsize, Ordering}, Barrier};
 use std::thread;
 use std::env;
 use std::time::Instant;
@@ -32,17 +32,17 @@ fn parse_args() -> (usize, usize, usize) {
 fn main() {
     let (num_producers, num_consumers, items_per_producer) = parse_args();
 
-    println!("--- Blocking Queue ---");
-    let start_blocking = Instant::now();
-    let queue = Arc::new(blocking_queue::BlockingQueue::new());
-    run_test(queue, num_producers, num_consumers, items_per_producer);
-    println!("Tiempo: {:?}\n", start_blocking.elapsed());
-
     println!("--- Lock-Free Queue ---");
     let start_lock_free = Instant::now();
     let queue = Arc::new(lock_free_queue::LockFreeQueue::new());
     run_test(queue, num_producers, num_consumers, items_per_producer);
     println!("Tiempo: {:?}", start_lock_free.elapsed());
+
+    println!("--- Blocking Queue ---");
+    let start_blocking = Instant::now();
+    let queue = Arc::new(blocking_queue::BlockingQueue::new());
+    run_test(queue, num_producers, num_consumers, items_per_producer);
+    println!("Tiempo: {:?}\n", start_blocking.elapsed());
 }
 
 fn run_test(
