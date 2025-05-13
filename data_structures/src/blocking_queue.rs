@@ -20,16 +20,17 @@ impl<T: Send> Queue<T> for BlockingQueue<T> {
     fn enqueue(&self, value: T) {
         let mut q = self.queue.lock().unwrap();
         q.push_back(value);
-        self.condvar.notify_one(); // despierta a un consumidor
+        self.condvar.notify_all(); // despierta a todos los threads
     }
 
     fn dequeue(&self) -> Option<T> {
         let mut q = self.queue.lock().unwrap();
-        loop {
-            if let Some(val) = q.pop_front() {
-                return Some(val);
-            }
+
+        while q.len() == 0 {
+            // espera a que haya elementos en la cola
             q = self.condvar.wait(q).unwrap();
         }
+
+        q.pop_front()
     }
 }
