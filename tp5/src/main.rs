@@ -1,4 +1,4 @@
-use std::sync::{Arc, atomic::{AtomicUsize, Ordering}, Barrier};
+use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 use std::thread;
 use std::env;
 use std::time::Instant;
@@ -74,6 +74,8 @@ fn run_test(
             while c.load(Ordering::Relaxed) < total {
                 if let Some(_) = q.dequeue() {
                     c.fetch_add(1, Ordering::Relaxed);
+                } else if c.load(Ordering::Relaxed) == total {
+                    break; // Salir si ya se consumieron todos los elementos
                 }
             }
         }));
