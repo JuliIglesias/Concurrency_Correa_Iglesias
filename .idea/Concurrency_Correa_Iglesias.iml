@@ -26,6 +26,7 @@
       <excludeFolder url="file://$MODULE_DIR$/log_server/target" />
       <excludeFolder url="file://$MODULE_DIR$/data_structures/target" />
       <excludeFolder url="file://$MODULE_DIR$/tp5/target" />
+      <excludeFolder url="file://$MODULE_DIR$/philosophers-may-3rd/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
