@@ -1,5 +1,6 @@
 use std::collections::VecDeque;
 use std::sync::{Mutex, Condvar};
+use crate::Queue;
 
 pub struct BlockingQueue<T> {
     queue: Mutex<VecDeque<T>>,
@@ -13,18 +14,20 @@ impl<T> BlockingQueue<T> {
             condvar: Condvar::new(),
         }
     }
+}
 
-    pub fn enqueue(&self, value: T) {
+impl<T: Send> Queue<T> for BlockingQueue<T> {
+    fn enqueue(&self, value: T) {
         let mut q = self.queue.lock().unwrap();
         q.push_back(value);
         self.condvar.notify_one(); // despierta a un consumidor
     }
 
-    pub fn dequeue(&self) -> T {
+    fn dequeue(&self) -> Option<T> {
         let mut q = self.queue.lock().unwrap();
         loop {
             if let Some(val) = q.pop_front() {
-                return val;
+                return Some(val);
             }
             q = self.condvar.wait(q).unwrap();
         }

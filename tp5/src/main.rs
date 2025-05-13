@@ -2,53 +2,55 @@ use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 use std::thread;
 use std::env;
 use std::time::Instant;
-use data_structures::{BlockingQueue, lockfree_queue};
+use data_structures::{Queue, blocking_queue, lock_free_queue};
 
-trait Queue<T>: Send + Sync {
-    fn enqueue(&self, item: T);
-    fn dequeue(&self) -> Option<T>;
-}
-
-fn parse_args() -> (usize, usize, usize, String) {
+fn parse_args() -> (usize, usize, usize) {
     let args: Vec<String> = env::args().collect();
-    if args.len() < 5 {
-        eprintln!("Uso: {} <producers> <consumers> <items_per_producer> <mode>", args[0]);
-        std::process::exit(1);
-    }
 
-    let producers = args[1].parse().unwrap();
-    let consumers = args[2].parse().unwrap();
-    let items = args[3].parse().unwrap();
-    let mode = args[4].clone();
+    let mut producers = None;
+    let mut consumers = None;
+    let mut items = None;
 
-    (producers, consumers, items, mode)
-}
-
-fn main() {
-    let (num_producers, num_consumers, items_per_producer, mode) = parse_args();
-    let total_items = num_producers * items_per_producer;
-
-    let start = Instant::now();
-
-    match mode.as_str() {
-        "blocking" => run_test::<blocking_queue::BlockingQueue<usize>>(num_producers, num_consumers, items_per_producer),
-        "lockfree" => run_test::<lockfree_queue::LockFreeQueue<usize>>(num_producers, num_consumers, items_per_producer),
-        _ => {
-            eprintln!("Modo desconocido: usa 'blocking' o 'lockfree'");
-            std::process::exit(1);
+    let mut iter = args.iter().skip(1); // Saltar el primer argumento (nombre del programa)
+    while let Some(arg) = iter.next() {
+        match arg.as_str() {
+            "--producers" => producers = iter.next().and_then(|s| s.parse().ok()),
+            "--consumers" => consumers = iter.next().and_then(|s| s.parse().ok()),
+            "--items" => items = iter.next().and_then(|s| s.parse().ok()),
+            _ => {}
         }
     }
 
-    let duration = start.elapsed();
-    println!("Tiempo total: {:?}", duration);
+    if let (Some(p), Some(c), Some(i)) = (producers, consumers, items) {
+        (p, c, i)
+    } else {
+        eprintln!("Uso: cargo run -- --producers <N> --consumers <N> --items <N>");
+        std::process::exit(1);
+    }
 }
 
-fn run_test<Q: Queue<usize> + 'static>(
+fn main() {
+    let (num_producers, num_consumers, items_per_producer) = parse_args();
+
+    println!("--- Blocking Queue ---");
+    let start_blocking = Instant::now();
+    let queue = Arc::new(blocking_queue::BlockingQueue::new());
+    run_test(queue, num_producers, num_consumers, items_per_producer);
+    println!("Tiempo: {:?}\n", start_blocking.elapsed());
+
+    println!("--- Lock-Free Queue ---");
+    let start_lock_free = Instant::now();
+    let queue = Arc::new(lock_free_queue::LockFreeQueue::new());
+    run_test(queue, num_producers, num_consumers, items_per_producer);
+    println!("Tiempo: {:?}", start_lock_free.elapsed());
+}
+
+fn run_test(
+    queue: Arc<dyn Queue<usize>>,
     num_producers: usize,
     num_consumers: usize,
     items_per_producer: usize,
 ) {
-    let queue = Arc::new(Q::new());
     let consumed = Arc::new(AtomicUsize::new(0));
     let total = num_producers * items_per_producer;
 
@@ -81,5 +83,5 @@ fn run_test<Q: Queue<usize> + 'static>(
         h.join().unwrap();
     }
 
-    println!("Consumidos: {}", consumed.load(Ordering::Relaxed));
+    println!("Total consumidos: {}", consumed.load(Ordering::Relaxed));
 }
