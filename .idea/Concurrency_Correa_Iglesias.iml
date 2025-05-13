@@ -12,6 +12,7 @@
       <sourceFolder url="file://$MODULE_DIR$/tp3/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tp4/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/log_server/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tp5/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/tp1/target" />
       <excludeFolder url="file://$MODULE_DIR$/http_server/target" />
       <excludeFolder url="file://$MODULE_DIR$/grep/grep_client/target" />
@@ -22,6 +23,7 @@
       <excludeFolder url="file://$MODULE_DIR$/tp3/target" />
       <excludeFolder url="file://$MODULE_DIR$/tp4/target" />
       <excludeFolder url="file://$MODULE_DIR$/log_server/target" />
+      <excludeFolder url="file://$MODULE_DIR$/tp5/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
