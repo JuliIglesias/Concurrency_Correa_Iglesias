@@ -37,16 +37,14 @@ fn main() {
     println!("--- Lock-Free Queue ---");
     let start_lock_free = Instant::now();
     let queue = Arc::new(lock_free_queue::LockFreeQueue::new());
-    let t1 = thread::spawn(move || { run_test(queue, num_producers, num_consumers, items_per_producer, "Lock-Free Queue".to_string()) });
-    t1.join().unwrap();
+    run_test(queue, num_producers, num_consumers, items_per_producer, "Lock-Free Queue".to_string());
     println!("Tiempo de lock-free queue: {:?}", start_lock_free.elapsed());
 
-    // println!("--- Blocking Queue ---");
-    // let start_blocking = Instant::now();
-    // let queue = Arc::new(blocking_queue::BlockingQueue::new());
-    // let t2 = thread::spawn(move || {run_test(queue, num_producers, num_consumers, items_per_producer, "Blocking Queue".to_string())});
-    // t2.join().unwrap();
-    // println!("Tiempo blocking queue: {:?}\n", start_blocking.elapsed());
+    println!("--- Blocking Queue ---");
+    let start_blocking = Instant::now();
+    let queue = Arc::new(blocking_queue::BlockingQueue::new());
+    run_test(queue, num_producers, num_consumers, items_per_producer, "Blocking Queue".to_string());
+    println!("Tiempo blocking queue: {:?}\n", start_blocking.elapsed());
 }
 
 fn run_test(
