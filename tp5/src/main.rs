@@ -1,4 +1,6 @@
-use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
+use std::sync::{Arc, 
+                // atomic::{AtomicUsize, Ordering}
+};
 use std::thread;
 use std::env;
 use std::time::Instant;
@@ -35,14 +37,16 @@ fn main() {
     println!("--- Lock-Free Queue ---");
     let start_lock_free = Instant::now();
     let queue = Arc::new(lock_free_queue::LockFreeQueue::new());
-    run_test(queue, num_producers, num_consumers, items_per_producer, "Lock-Free Queue".to_string());
+    let t1 = thread::spawn(move || { run_test(queue, num_producers, num_consumers, items_per_producer, "Lock-Free Queue".to_string()) });
+    t1.join().unwrap();
     println!("Tiempo de lock-free queue: {:?}", start_lock_free.elapsed());
 
-    println!("--- Blocking Queue ---");
-    let start_blocking = Instant::now();
-    let queue = Arc::new(blocking_queue::BlockingQueue::new());
-    run_test(queue, num_producers, num_consumers, items_per_producer, "Blocking Queue".to_string());
-    println!("Tiempo blocking queue: {:?}\n", start_blocking.elapsed());
+    // println!("--- Blocking Queue ---");
+    // let start_blocking = Instant::now();
+    // let queue = Arc::new(blocking_queue::BlockingQueue::new());
+    // let t2 = thread::spawn(move || {run_test(queue, num_producers, num_consumers, items_per_producer, "Blocking Queue".to_string())});
+    // t2.join().unwrap();
+    // println!("Tiempo blocking queue: {:?}\n", start_blocking.elapsed());
 }
 
 fn run_test(
@@ -50,7 +54,7 @@ fn run_test(
     num_producers: usize,
     num_consumers: usize,
     items_per_producer: usize,
-    queue_type: String,
+    _queue_type: String,
 ) {
     // let consumed = Arc::new(AtomicUsize::new(0));
     // let total = num_producers * items_per_producer;
@@ -73,7 +77,7 @@ fn run_test(
         // let queue_type = queue_type.clone();
         thread::spawn(move || {
             loop {
-                if let Some(item) = q.dequeue() {
+                if let Some(_item) = q.dequeue() {
                     // println!("{}, Consumer {}: Dequeued {}", queue_type, i, item);
                 } else {
                     break;
