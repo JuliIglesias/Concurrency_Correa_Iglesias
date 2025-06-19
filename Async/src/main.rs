@@ -1,62 +1,120 @@
 mod io_tasks;
 mod pi_calc;
 
-use clap::{Parser, ValueEnum};
+use std::env;
 use std::time::Instant;
 
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
 struct Args {
-    /// Modo de ejecución: thread o async
-    #[arg(value_enum)]
-    mode: Mode,
-    /// Tipo de tarea: io o pi
-    #[arg(value_enum)]
-    task: TaskType,
-    /// Número de tareas concurrentes
-    #[arg(short, long, default_value_t = 10)]
-    tasks: usize,
-    /// Cantidad de términos para el cálculo de Pi (solo para task=pi)
-    #[arg(short, long, default_value_t = 10000)]
+    mode: String,
+    task: String,
+    number_of_tasks: usize,
     terms: usize,
-    /// Milisegundos de espera por tarea (solo para task=io)
-    #[arg(short, long, default_value_t = 100)]
     millis: u64,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
-enum Mode {
-    Thread,
-    Async,
-}
+fn parse_args() -> Result<Args, String> {
+    let args: Vec<String> = env::args().collect();
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
-enum TaskType {
-    Io,
-    Pi,
+    if args.len() < 3 {
+        return Err(format!("Use: {} [thread|async] [io|pi] [options]", args[0]));
+    }
+
+    // Obtenemos directamente los valores como strings
+    let mode = args[1].to_lowercase();
+    let task = args[2].to_lowercase();
+
+    // Validación básica
+    if mode != "thread" && mode != "async" {
+        return Err("Mode must be 'thread' or 'async'".to_string());
+    }
+
+    if task != "io" && task != "pi" {
+        return Err("Task type must be 'io' ro 'pi'.".to_string());
+    }
+
+    // Valores por defecto
+    let mut number_of_tasks = 10;
+    let mut terms = 10000;
+    let mut millis = 100;
+
+    // Parsear opciones adicionales
+    let mut i = 3;
+    while i < args.len() {
+        match args[i].as_str() {
+            "-n" | "--number-of-tasks" => {
+                if i + 1 < args.len() {
+                    i += 1;
+                    number_of_tasks = args[i]
+                        .parse::<usize>()
+                        .map_err(|_| "Number of tasks must be a positive integer.".to_string())?;
+                }
+            }
+            "-t" | "--terms" => {
+                if i + 1 < args.len() {
+                    i += 1;
+                    terms = args[i]
+                        .parse::<usize>()
+                        .map_err(|_| "Number of terms must be a positive integer.".to_string())?;
+                }
+            }
+            "-m" | "--millis" => {
+                if i + 1 < args.len() {
+                    i += 1;
+                    millis = args[i]
+                        .parse::<u64>()
+                        .map_err(|_| "Milliseconds must be a positive integer.".to_string())?;
+                }
+            }
+            _ => return Err(format!("Unknown option: {}", args[i])),
+        }
+        i += 1;
+    }
+
+    Ok(Args {
+        mode,
+        task,
+        number_of_tasks,
+        terms,
+        millis,
+    })
 }
 
 #[tokio::main]
 async fn main() {
-    let args = Args::parse();
+    let args = match parse_args() {
+        Ok(args) => args,
+        Err(error) => {
+            eprintln!("Error: {}", error);
+            eprintln!("Use: cargo run [thread|async] [io|pi] [options]");
+            eprintln!("Options:");
+            eprintln!("  -n, --number-of-tasks N    Number of concurrent (default: 10)");
+            eprintln!("  -t, --terms N              Number of terms for Leibniz terms (default: 10000)");
+            eprintln!("  -m, --millis N             Milliseconds of wait for IO tasks (default: 100)");
+            std::process::exit(1);
+        }
+    };
+
     let start = Instant::now();
-    match (args.mode, args.task) {
-        (Mode::Thread, TaskType::Io) => {
-            io_tasks::simulate_io_threads(args.tasks, args.millis);
+    match (args.mode.as_str(), args.task.as_str()) {
+        ("thread", "io") => {
+            io_tasks::simulate_io_threads(args.number_of_tasks, args.millis);
         }
-        (Mode::Async, TaskType::Io) => {
-            io_tasks::simulate_io_async(args.tasks, args.millis).await;
+        ("async", "io") => {
+            io_tasks::simulate_io_async(args.number_of_tasks, args.millis).await;
         }
-        (Mode::Thread, TaskType::Pi) => {
-            let pi = pi_calc::calc_pi_threads(args.tasks, args.terms);
+        ("thread", "pi") => {
+            let pi = pi_calc::calc_pi_threads(args.number_of_tasks, args.terms);
             println!("Pi ≈ {}", pi);
         }
-        (Mode::Async, TaskType::Pi) => {
-            let pi = pi_calc::calc_pi_async(args.tasks, args.terms).await;
+        ("async", "pi") => {
+            let pi = pi_calc::calc_pi_async(args.number_of_tasks, args.terms).await;
             println!("Pi ≈ {}", pi);
+        }
+        _ => {
+            eprintln!("Invalid arguments");
+            std::process::exit(1);
         }
     }
     let elapsed = start.elapsed();
-    println!("Tiempo de ejecución: {:.2?}", elapsed);
+    println!("Execution time: {:.2?}", elapsed);
 }
-
