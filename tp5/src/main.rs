@@ -35,14 +35,14 @@ fn main() {
     println!("--- Lock-Free Queue ---");
     let start_lock_free = Instant::now();
     let queue = Arc::new(lock_free_queue::LockFreeQueue::new());
-    run_test(queue, num_producers, num_consumers, items_per_producer);
-    println!("Tiempo: {:?}", start_lock_free.elapsed());
+    run_test(queue, num_producers, num_consumers, items_per_producer, "Lock-Free Queue".to_string());
+    println!("Tiempo de lock-free queue: {:?}", start_lock_free.elapsed());
 
     println!("--- Blocking Queue ---");
     let start_blocking = Instant::now();
     let queue = Arc::new(blocking_queue::BlockingQueue::new());
-    run_test(queue, num_producers, num_consumers, items_per_producer);
-    println!("Tiempo: {:?}\n", start_blocking.elapsed());
+    run_test(queue, num_producers, num_consumers, items_per_producer, "Blocking Queue".to_string());
+    println!("Tiempo blocking queue: {:?}\n", start_blocking.elapsed());
 }
 
 fn run_test(
@@ -50,40 +50,37 @@ fn run_test(
     num_producers: usize,
     num_consumers: usize,
     items_per_producer: usize,
+    queue_type: String,
 ) {
-    let consumed = Arc::new(AtomicUsize::new(0));
-    let total = num_producers * items_per_producer;
-
-    let mut handles = vec![];
-
+    // let consumed = Arc::new(AtomicUsize::new(0));
+    // let total = num_producers * items_per_producer;
+    
     // productores
     for i in 0..num_producers {
         let q = Arc::clone(&queue);
-        handles.push(thread::spawn(move || {
-            for j in 0..items_per_producer {
-                q.enqueue(i * items_per_producer + j);
+        // let queue_type = queue_type.clone();
+        thread::spawn(move || {
+            for item in 0..items_per_producer {
+                q.enqueue(i * items_per_producer + item);
+                // println!("{}: Producer {}: Enqueued {}", queue_type, i, item)
             }
-        }));
+        });
     }
 
     // consumidores
-    for _ in 0..num_consumers {
+    for _i in 0..num_consumers {
         let q = Arc::clone(&queue);
-        let c = Arc::clone(&consumed);
-        handles.push(thread::spawn(move || {
-            while c.load(Ordering::Relaxed) < total {
-                if let Some(_) = q.dequeue() {
-                    c.fetch_add(1, Ordering::Relaxed);
-                } else if c.load(Ordering::Relaxed) == total {
-                    break; // Salir si ya se consumieron todos los elementos
+        // let queue_type = queue_type.clone();
+        thread::spawn(move || {
+            loop {
+                if let Some(item) = q.dequeue() {
+                    // println!("{}, Consumer {}: Dequeued {}", queue_type, i, item);
+                } else {
+                    break;
                 }
             }
-        }));
+        });
     }
 
-    for h in handles {
-        h.join().unwrap();
-    }
-
-    println!("Total consumidos: {}", consumed.load(Ordering::Relaxed));
+    // println!("Elementos consumidos de la queue: {}", consumed.load(Ordering::Relaxed));
 }
