@@ -1,4 +1,5 @@
 use std::ptr;
+use std::ptr::read;
 use std::sync::atomic::{AtomicPtr, Ordering};
 use crate::Queue;
 
@@ -54,20 +55,18 @@ impl<T: Send> Queue<T> for LockFreeQueue<T> {
             let cur_tail = self.tail.load(Ordering::Acquire);
             let cur_head_next = unsafe { (*cur_head).next.load(Ordering::Acquire) };
 
-            if cur_head_next.is_null() {
-                return None; // cola vacía
-            }
-
-            if cur_head == cur_tail {
-                let _ = self.tail.compare_exchange(cur_tail, cur_head_next, Ordering::AcqRel, Ordering::Relaxed);
-            } else {
-                if self.head.compare_exchange(cur_head, cur_head_next, Ordering::AcqRel, Ordering::Relaxed).is_ok() {
-                    let value = unsafe {
-                        let value = (*cur_head_next).value.take();
-                        drop(Box::from_raw(cur_head)); // liberar el nodo anterior
-                        value
-                    };
-                    return value;
+            if cur_head == self.head.load(Ordering::Acquire) {
+                if cur_head == cur_tail {
+                    if cur_head_next.is_null() {
+                        return None;
+                    }
+                    let _ = self.tail.compare_exchange(cur_tail, cur_head_next, Ordering::AcqRel, Ordering::Relaxed);
+                } else {
+                    if let Some(_value) = unsafe { &(*cur_head_next).value } {
+                        if self.head.compare_exchange(cur_head, cur_head_next, Ordering::AcqRel, Ordering::Relaxed).is_ok() {
+                            return unsafe { read(&(*cur_head_next).value) }
+                        }
+                    }
                 }
             }
         }
