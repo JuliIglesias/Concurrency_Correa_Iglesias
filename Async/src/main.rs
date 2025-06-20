@@ -32,10 +32,9 @@ fn parse_args() -> Result<Args, String> {
         return Err("Task type must be 'io' ro 'pi'.".to_string());
     }
 
-    // Valores por defecto
-    let mut number_of_tasks = 10;
-    let mut terms = 10000;
-    let mut millis = 100;
+    let mut number_of_tasks;
+    let mut terms;
+    let mut millis;
 
     // Parsear opciones adicionales
     let mut i = 3;
